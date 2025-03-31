@@ -1,0 +1,2 @@
+require("mo")
+print("hello")
