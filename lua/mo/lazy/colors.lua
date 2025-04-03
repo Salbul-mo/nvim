@@ -11,7 +11,6 @@ return {
     {
         "erikbackman/brightburn.vim",
     },
-
     {
         "folke/tokyonight.nvim",
         lazy = false,
@@ -71,7 +70,6 @@ return {
             })
         end
     },
-
     {
         "rose-pine/neovim",
         name = "rose-pine",
@@ -82,10 +80,7 @@ return {
                     italic = false,
                 },
             })
-
             ColorMyPencils();
         end
     },
-
-
 }
