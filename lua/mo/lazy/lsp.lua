@@ -17,6 +17,8 @@ return {
     config = function()
         require("conform").setup({
             formatters_by_ft = {
+                python = { "isort", "black" },
+                java = { "google-java-format" },
             }
         })
         local cmp = require('cmp')
@@ -31,7 +33,12 @@ return {
         require("mason").setup()
         require("mason-lspconfig").setup({
             ensure_installed = {
+                "lua_ls",
+                "rust_analyzer",
+                "gopls",
                 "ast_grep",
+                "pyright", -- Python LSP
+                "jdtls", -- Java LSP
             },
             handlers = {
                 function(server_name) -- default handler (optional)
@@ -56,12 +63,61 @@ return {
                     vim.g.zig_fmt_autosave = 0
 
                 end,
+                ["lua_ls"] = function()
+                    local lspconfig = require("lspconfig")
+                    lspconfig.lua_ls.setup {
+                        capabilities = capabilities,
+                        settings = {
+                    Lua = {
+                        runtime = {
+                            version = "Lua 5.1" },
+                        diagnostics = {
+                            globals = { "bit", "vim", "it", "describe", "before_each", "after_each" },
+                        }
+                    }
+                }
+                    }
+                end,
                 ["ast_grep"] = function()
                     local lspconfig = require("lspconfig")
                     lspconfig.ast_grep.setup {
                         root_dir = lspconfig.util.root_pattern("sgconfig.yaml", "sgconfig.yml"),
                         capabilities = capabilities,
                     }
+                end,
+
+                -- Python LSP configuration
+                ["pyright"] = function()
+                    local lspconfig = require("lspconfig")
+                    lspconfig.pyright.setup {
+                        capabilities = capabilities,
+                        settings = {
+                            python = {
+                                analysis = {
+                                    autoSearchPaths = true,
+                                    diagnosticMode = "workspace",
+                                    useLibraryCodeForTypes = true,
+                                    typeCheckingMode = "basic",
+                                }
+                            }
+                        }
+                    }
+                end,
+                ["ruff_lsp"] = function()
+                    local lspconfig = require("lspconfig")
+                    lspconfig.ruff_lsp.setup {
+                        capabilities = capabilities,
+                        init_options = {
+                            settings = {
+                                interpreter = { "python" }, -- Path to Python interpreter
+                            }
+                        }
+                    }
+                end,
+
+                -- Skip JDTLS configuration for separate file conf
+                ["jdtls"] = function()
+                    -- ftplugin do something
                 end,
             }
         })
@@ -75,8 +131,8 @@ return {
                 end,
             },
             mapping = cmp.mapping.preset.insert({
-                ['<C-h>'] = cmp.mapping.select_prev_item(cmp_select),
-                ['<C-l>'] = cmp.mapping.select_next_item(cmp_select),
+                ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
+                ['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
                 ['<C-y>'] = cmp.mapping.confirm({ select = true }),
                 ["<C-Space>"] = cmp.mapping.complete(),
             }),
@@ -85,8 +141,8 @@ return {
                 { name = 'nvim_lsp' },
                 { name = 'luasnip' }, -- For luasnip users.
             }, {
-                { name = 'buffer' },
-            })
+                    { name = 'buffer' },
+                })
         })
 
         vim.diagnostic.config({
